@@ -5,10 +5,10 @@ WORKDIR /app
 RUN pip install poetry
 RUN poetry config virtualenvs.create false
 
-COPY pyproject.toml poetry.lock ./
+COPY pyproject.toml ./
 
 RUN poetry install --no-root --no-interaction
 
 COPY . .
 
-CMD["python", "-u", "worker.py"]
+CMD ["python", "-u", "worker.py"]
