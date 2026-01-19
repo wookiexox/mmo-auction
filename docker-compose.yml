@@ -33,6 +33,11 @@ services:
     build: ./api
     ports:
       - "8000:8000"
+    environment:
+      - DB_HOST=postgres
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=adminpassword
+      - POSTGRES_DB=auction_db
     depends_on:
       postgres:
         condition: service_healthy
@@ -43,6 +48,11 @@ services:
 
   worker:
     build: ./worker
+    environment:
+      - DB_HOST=postgres
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=adminpassword
+      - POSTGRES_DB=auction_db
     depends_on:
       postgres:
         condition: service_healthy
