@@ -14,11 +14,17 @@ def process_purchase(ch, method, properties, body):
 
     print(f"[X] Received request for item '{item_id}' from user '{user_id}'")
 
+    if item_id <= 0 or item_id is None:
+        print(f"[!] Error: Item ID {item_id} is invalid, sending to DLQ")
+        ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)
+        return
+
     db = SessionLocal()
     try:
         item = db.query(models.Item).filter(models.Item.id == item_id).with_for_update().first()
         if not item:
             print(f"[!] Item '{item_id}' not found")
+            ch.basic_ack(delivery_tag = method.delivery_tag)
             return
         if item.is_sold:
             print(f"[-] Item '{item_id}' is already sold - user's '{user_id}' transaction failed")
@@ -29,12 +35,13 @@ def process_purchase(ch, method, properties, body):
             item.owner_id = user_id
             db.commit()
             print(f"[+] Item '{item_id}' purchased successfully by user '{user_id}'")
+        ch.basic_ack(delivery_tag = method.delivery_tag)
     except Exception as e:
         print(f"[!] Error: {e}")
         db.rollback()
+        ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)
     finally:
         db.close()
-        ch.basic_ack(delivery_tag = method.delivery_tag)
 
 def start_consuming():
     connection = rabbitmq.get_connection()
