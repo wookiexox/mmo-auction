@@ -15,13 +15,13 @@ def root():
     return {"message": "cAPIbara ready"}
 
 @app.post("/setup-demo")
-def setup_demo(db: Session = Depends(get_db)):
-    if db.query(models.Item).count() == 0:
-        item = models.Item(name="Kordelas", price=2000, is_sold=False)
-        db.add(item)
-        db.commit()
-        return {"message": "created Kordelas"}
-    return {"message": "Kordelas already exists"}
+def setup_demo(item_name: str = "Base sword", db: Session = Depends(get_db)):
+    item = models.Item(name=item_name, price=2000, is_sold=False)
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return {"message": f"created '{item_name}'",
+            "item_id": item.id,}
 
 @app.post("/buy/{item_id}")
 def buy_item(item_id: int, user_id: int):

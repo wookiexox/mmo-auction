@@ -7,28 +7,28 @@ import models
 
 print("Worker started, waiting for rabbitmq")
 
-def process_purchase(ch, method, properties, body):
+def process_purchase(ch, method, body):
     data = json.loads(body)
     item_id = data.get("item_id")
     user_id = data.get("user_id")
 
-    print(f"[X] Received request for item {item_id} from user {user_id}")
+    print(f"[X] Received request for item '{item_id}' from user '{user_id}'")
 
     db = SessionLocal()
     try:
         item = db.query(models.Item).filter(models.Item.id == item_id).first()
         if not item:
-            print(f"[!] Item {item_id} not found")
+            print(f"[!] Item '{item_id}' not found")
             return
         if item.is_sold:
-            print(f"[-] Item {item_id} is already sold - user's {user_id} transaction failed")
+            print(f"[-] Item '{item_id}' is already sold - user's '{user_id}' transaction failed")
         else:
-            print(f"[..] User {user_id} is processing payment for item {item_id}")
+            print(f"[..] User '{user_id}' is processing payment for item '{item_id}'")
             time.sleep(5)
             item.is_sold = True
             item.owner_id = user_id
             db.commit()
-            print(f"[+] Item {item_id} purchased successfully by user {user_id}")
+            print(f"[+] Item '{item_id}' purchased successfully by user '{user_id}'")
     except Exception as e:
         print(f"[!] Error: {e}")
     finally:
