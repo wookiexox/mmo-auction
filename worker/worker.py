@@ -7,7 +7,7 @@ import models
 
 print("Worker started, waiting for rabbitmq")
 
-def process_purchase(ch, method, body):
+def process_purchase(ch, method, properties, body):
     data = json.loads(body)
     item_id = data.get("item_id")
     user_id = data.get("user_id")
@@ -16,7 +16,7 @@ def process_purchase(ch, method, body):
 
     db = SessionLocal()
     try:
-        item = db.query(models.Item).filter(models.Item.id == item_id).first()
+        item = db.query(models.Item).filter(models.Item.id == item_id).with_for_update().first()
         if not item:
             print(f"[!] Item '{item_id}' not found")
             return
@@ -31,6 +31,7 @@ def process_purchase(ch, method, body):
             print(f"[+] Item '{item_id}' purchased successfully by user '{user_id}'")
     except Exception as e:
         print(f"[!] Error: {e}")
+        db.rollback()
     finally:
         db.close()
         ch.basic_ack(delivery_tag = method.delivery_tag)
