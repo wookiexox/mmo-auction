@@ -38,6 +38,7 @@ services:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=adminpassword
       - POSTGRES_DB=auction_db
+      - RABBITMQ_HOST=rabbitmq
     depends_on:
       postgres:
         condition: service_healthy
@@ -53,6 +54,7 @@ services:
       - POSTGRES_USER=admin
       - POSTGRES_PASSWORD=adminpassword
       - POSTGRES_DB=auction_db
+      - RABBITMQ_HOST=rabbitmq
     depends_on:
       postgres:
         condition: service_healthy
