@@ -71,6 +71,7 @@ services:
     volumes:
       - ./:/app
     working_dir: /app
+    profiles: ["tools"]
     environment:
       - API_HOST=api
       - RABBITMQ_HOST=rabbitmq
