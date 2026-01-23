@@ -26,7 +26,7 @@ async def create_item(client, name):
 
 async def buy_request(client, item_id, user_id):
     try:
-        response = await client.post(f"{API_URL}/buy/{item_id}, params={"user_id": user_id}")
+        response = await client.post(f"{API_URL}/buy/{item_id}", params={"user_id": user_id})
         if response.status_code == 200:
             return True
     except Exception:
@@ -48,7 +48,8 @@ async def attack_concurrency(n_requests = 100):
 
         results = await asyncio.gather(*tasks)
         print(f"[>] Sent {len(results)} requests")
-        await asyncio.sleep(7)
+        print(f"[>] Waiting 12 seconds for workers...")
+        await asyncio.sleep(12)
 
         try:
             response = await client.get(f"{API_URL}/items/{item_id}")
@@ -94,7 +95,7 @@ def attack_poison():
         print(f"[!] Error: Connection failed: {e}")
 
 async def main():
-    await attack_concurrency(n_requests = 50)
+    await attack_concurrency(n_requests = 10)
     attack_poison()
 
 if __name__ == "__main__":

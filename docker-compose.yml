@@ -49,6 +49,9 @@ services:
 
   worker:
     build: ./worker
+    deploy:
+      mode: replicated
+      replicas: 5
     environment:
       - DB_HOST=postgres
       - POSTGRES_USER=admin
