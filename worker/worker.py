@@ -3,21 +3,36 @@ import json
 import rabbitmq
 from database import SessionLocal
 import models
+import sys
 
-
+POSTGRES_MAX_INT = 2_147_483_647
 print("Worker started, waiting for rabbitmq")
 
 def process_purchase(ch, method, properties, body):
-    data = json.loads(body)
+    try:
+        data = json.loads(body)
+    except json.JSONDecodeError:
+        print("[!] Error: Invalid JSON, sending to DLQ")
+        ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)
+        return
+
     item_id = data.get("item_id")
     user_id = data.get("user_id")
 
-    print(f"[X] Received request for item '{item_id}' from user '{user_id}'")
-
-    if item_id <= 0 or item_id is None:
+    if not isinstance(item_id, int) or not isinstance(user_id, int):
+        print(f"[!] Error: User ID and Item ID have to be a number")
+        ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)
+        return
+    if user_id > POSTGRES_MAX_INT or user_id <= 0:
+        print(f"[!] Error: User ID {user_id} is invalid, sending to DLQ")
+        ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)
+        return
+    if item_id > POSTGRES_MAX_INT or item_id <= 0:
         print(f"[!] Error: Item ID {item_id} is invalid, sending to DLQ")
         ch.basic_nack(delivery_tag = method.delivery_tag, requeue=False)
         return
+
+    print(f"[X] Received request for item '{item_id}' from user '{user_id}'")
 
     db = SessionLocal()
     try:
