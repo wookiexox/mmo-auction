@@ -63,5 +63,20 @@ services:
     volumes:
       - ./worker:/app
 
+  scenario:
+    image: python:3.13-slim
+    volumes:
+      - ./:/app
+    working_dir: /app
+    environment:
+      - API_HOST=api
+      - RABBITMQ_HOST=rabbitmq
+      - PYTHONUNBUFFERED=1
+    command: >
+      sh -c "pip install httpx pika colorama && python scenario.py"
+    depends_on:
+      - api
+      - rabbitmq
+
 volumes:
   postgres_data:

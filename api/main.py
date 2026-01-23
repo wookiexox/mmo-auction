@@ -45,3 +45,16 @@ def buy_item(item_id: int, user_id: int):
     return {"message": "Purchase request sent to queue",
             "item_id": item_id,
             "user_id": user_id}
+
+@app.get("/items/{item_id}")
+def get_item(item_id: int, db: Session = Depends(get_db)):
+    item = db.query(models.Item).filter(models.Item.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    return {
+        "item_id": item_id,
+        "name": item.name,
+        "is_sold": item.is_sold,
+        "owner_id": item.owner_id
+    }
